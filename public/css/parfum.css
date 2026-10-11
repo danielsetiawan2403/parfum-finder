@@ -1,0 +1,132 @@
+/* Gaya tambahan di atas Bootstrap untuk Parfum Finder */
+:root {
+    --pf-red: #dc3545;
+    --pf-red-dark: #b30000;
+    --pf-bg: #1a1a1a;
+    --pf-card: #2b2b2b;
+}
+
+body {
+    font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--pf-bg);
+    color: #fff;
+}
+
+/* Warna */
+.bg-pf-red  { background-color: var(--pf-red) !important; }
+.bg-pf-bg   { background-color: var(--pf-bg) !important; }
+.bg-pf-card { background-color: var(--pf-card) !important; }
+.text-pf-red      { color: var(--pf-red) !important; }
+.text-pf-red-dark { color: #c40000 !important; }
+
+/* Tombol */
+.btn-pf {
+    background-color: var(--pf-red-dark);
+    border-color: var(--pf-red-dark);
+    color: #fff;
+}
+.btn-pf:hover, .btn-pf:focus { background-color: #d10000; border-color: #d10000; color: #fff; }
+
+.btn-pf-red {
+    background-color: var(--pf-red);
+    border-color: var(--pf-red);
+    color: #fff;
+}
+.btn-pf-red:hover, .btn-pf-red:focus { background-color: #e4606d; border-color: #e4606d; color: #fff; }
+
+.btn-pf-slate {
+    background-color: rgba(100, 116, 139, .8);
+    border-color: transparent;
+    color: #f1f5f9;
+}
+.btn-pf-slate:hover, .btn-pf-slate:focus { background-color: rgb(100, 116, 139); color: #fff; }
+
+/* Ukuran teks kecil */
+.pf-xs { font-size: .72rem; }
+
+/* Gambar parfum */
+.pf-img   { aspect-ratio: 1 / 1; background: #fff; overflow: hidden; }
+.pf-img-h { height: 12rem; background: #fff; overflow: hidden; }
+.pf-img img, .pf-img-h img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Kartu parfum yang bisa diklik (landing dan dashboard): terangkat saat disorot */
+.pf-card {
+    transition: transform .25s ease, box-shadow .25s ease;
+    will-change: transform;
+}
+.pf-card:hover,
+.pf-card:focus-visible {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 0 0 2px var(--pf-red), 0 14px 28px rgba(0, 0, 0, .55);
+}
+/* Gambar di dalam kartu ikut membesar sedikit */
+.pf-card .pf-img img,
+.pf-card .pf-img-h img { transition: transform .35s ease; }
+.pf-card:hover .pf-img img,
+.pf-card:hover .pf-img-h img,
+.pf-card:focus-visible .pf-img img,
+.pf-card:focus-visible .pf-img-h img { transform: scale(1.08); }
+
+/* Hormati pengguna yang mematikan animasi di sistemnya */
+@media (prefers-reduced-motion: reduce) {
+    .pf-card,
+    .pf-card img { transition: none; }
+    .pf-card:hover,
+    .pf-card:focus-visible,
+    .pf-card:hover img { transform: none; }
+}
+
+/* Form: fokus berwarna merah */
+.form-control:focus, .form-select:focus {
+    border-color: var(--pf-red);
+    box-shadow: 0 0 0 .2rem rgba(220, 53, 69, .25);
+}
+
+/* Halaman login dan registrasi */
+.auth-bg {
+    min-height: 100vh;
+    background: linear-gradient(rgba(0, 0, 0, .45), rgba(0, 0, 0, .45)),
+                url('../images/bg-login.jpg') center / cover no-repeat #000;
+}
+.glass {
+    background: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 1rem;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, .4);
+}
+.pf-error { color: #fca5a5; font-size: .75rem; margin-top: .25rem; }
+
+/* ---------- Premium dan chat ---------- */
+.btn-pf-gray {
+    background-color: #444;
+    border-color: #444;
+    color: #fff;
+}
+.btn-pf-gray:hover, .btn-pf-gray:focus { background-color: #5a5a5a; border-color: #5a5a5a; color: #fff; }
+
+/* Kartu pilihan paket */
+.pf-plan { cursor: pointer; transition: border-color .15s, background-color .15s; }
+.pf-plan:hover { border-color: var(--pf-red) !important; }
+.pf-plan:has(input:checked) {
+    border-color: var(--pf-red) !important;
+    background-color: #fff5f5;
+    box-shadow: 0 0 0 1px var(--pf-red);
+}
+.pf-plan .form-check-input:checked { background-color: var(--pf-red); border-color: var(--pf-red); }
+
+/* Chat */
+.pf-chat-box { max-height: 22rem; overflow-y: auto; }
+.pf-bubble { max-width: 80%; white-space: pre-wrap; word-wrap: break-word; }
+
+/* ---------- Ulasan: rating bintang ---------- */
+.pf-stars { position: relative; display: inline-flex; flex-direction: row-reverse; gap: .15rem; }
+.pf-stars input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.pf-stars label { font-size: 1.7rem; line-height: 1; color: #5c5c5c; cursor: pointer; transition: color .1s; }
+.pf-stars input:checked ~ label,
+.pf-stars label:hover,
+.pf-stars label:hover ~ label { color: #ffc107; }
+.pf-stars input:focus-visible + label { outline: 2px solid #fff; outline-offset: 2px; border-radius: 4px; }
+
+.pf-review-list { max-height: 22rem; overflow-y: auto; }
