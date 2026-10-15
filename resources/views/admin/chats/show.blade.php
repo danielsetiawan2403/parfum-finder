@@ -3,10 +3,6 @@
 @section('title', 'Chat ' . $user->name)
 
 @section('content')
-    <div class="page-head">
-        <a href="{{ route('admin.chats.index') }}" class="back-link">&larr; Kembali ke daftar chat</a>
-    </div>
-
     <section class="panel chat-card chat-room">
         <div class="chat-head">
             <div class="chat-who">
@@ -36,7 +32,10 @@
             @error('body')
                 <p class="field-error">{{ $message }}</p>
             @enderror
-            <button type="submit" class="btn btn-primary">Kirim balasan</button>
+            <div class="reply-actions">
+                <button type="submit" class="btn btn-primary">Kirim balasan</button>
+                <a href="{{ route('admin.chats.index') }}" class="btn btn-ghost">&larr; Kembali</a>
+            </div>
         </form>
     </section>
 @endsection

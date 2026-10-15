@@ -339,7 +339,7 @@ table.table { width: 100%; border-collapse: collapse; }
 
 .reply { display: grid; gap: 10px; }
 .reply textarea { min-height: 72px; }
-.reply .btn { justify-self: start; }
+.reply-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 
 /* Daftar user chat (tanpa isi pesan) */
 .chat-users { padding: 8px; }
@@ -360,9 +360,6 @@ table.table { width: 100%; border-collapse: collapse; }
 .chat-user-info strong { font-size: 16px; }
 .chat-user.is-pending .chat-user-info strong { font-weight: 800; }
 .chat-user-info small { font-size: 13px; color: var(--muted); }
-
-.back-link { display: inline-block; font-size: 14px; font-weight: 600; color: var(--edit-ink); text-decoration: none; }
-.back-link:hover { text-decoration: underline; }
 
 /* ---------- Dialog konfirmasi ---------- */
 .confirm {
@@ -429,7 +426,7 @@ table.table { width: 100%; border-collapse: collapse; }
     .notes { max-width: none; }
 
     .msg { max-width: 90%; }
-    .reply .btn { justify-self: stretch; }
+    .reply-actions .btn { flex: 1 1 140px; }
     .form-actions .btn { flex: 1 1 140px; }
     .pager { justify-content: center; }
 }
