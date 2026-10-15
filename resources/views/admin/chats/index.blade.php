@@ -5,7 +5,7 @@
 @section('content')
     <div class="page-head">
         <h1 class="page-title">Chat Konsultasi Admin</h1>
-        <p class="page-sub">Balas pertanyaan user premium. Percakapan yang belum dibalas tampil paling atas.</p>
+        <p class="page-sub">Pilih nama user untuk membuka room chat. Percakapan yang belum dibalas tampil paling atas.</p>
     </div>
 
     @if ($users->isEmpty())
@@ -16,59 +16,23 @@
             </div>
         </section>
     @else
-        <div class="chat-list">
+        <section class="panel chat-users">
             @foreach ($users as $user)
-                @php
-                    $all      = $user->chatMessages;
-                    $shown    = $all->slice(-20);
-                    $pending  = $all->last()->sender === 'user';
-                    $bag      = $errors->getBag("reply-{$user->id}");
-                    $hasError = $bag->has('body');
-                @endphp
+                <a href="{{ route('admin.chats.show', $user) }}" class="chat-user {{ $user->unread_count > 0 ? 'is-pending' : '' }}">
+                    <span class="chat-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($user->name, 0, 1)) }}</span>
 
-                <section class="panel chat-card" id="chat-{{ $user->id }}">
-                    <div class="chat-head">
-                        <div class="chat-who">
-                            <strong>{{ $user->name }}</strong>
-                            <span>{{ $user->username }}</span>
-                        </div>
+                    <span class="chat-user-info">
+                        <strong>{{ $user->name }}</strong>
+                        <small>{{ $user->username }} &middot; {{ $user->last_message_at->locale('id')->translatedFormat('j M, H:i') }}</small>
+                    </span>
 
-                        @if ($pending)
-                            <span class="badge badge--warn">Perlu dibalas</span>
-                        @else
-                            <span class="badge badge--ok">Sudah dibalas</span>
-                        @endif
-                    </div>
-
-                    @if ($all->count() > $shown->count())
-                        <p class="thread-note">Menampilkan 20 pesan terakhir dari {{ $all->count() }} pesan.</p>
+                    @if ($user->unread_count > 0)
+                        <span class="badge badge--warn">{{ $user->unread_count }} pesan baru</span>
+                    @else
+                        <span class="badge badge--ok">Sudah dibalas</span>
                     @endif
-
-                    <div class="thread" data-thread>
-                        @foreach ($shown as $message)
-                            <div class="msg {{ $message->sender === 'user' ? 'msg--user' : 'msg--admin' }}">
-                                <div class="bubble">{{ $message->body }}</div>
-                                <time datetime="{{ $message->created_at->toIso8601String() }}">
-                                    {{ $message->sender === 'user' ? $user->name : 'Kamu (admin)' }},
-                                    {{ $message->created_at->locale('id')->translatedFormat('j M, H:i') }}
-                                </time>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    <form action="{{ route('admin.chats.reply', $user) }}" method="POST" class="reply">
-                        @csrf
-                        <label for="reply-{{ $user->id }}" class="sr-only">Balasan untuk {{ $user->name }}</label>
-                        <textarea id="reply-{{ $user->id }}" name="body" rows="2" maxlength="1000"
-                                  placeholder="Tulis balasan admin..." required
-                                  class="{{ $hasError ? 'is-invalid' : '' }}">{{ $hasError ? old('body') : '' }}</textarea>
-                        @if ($hasError)
-                            <p class="field-error">{{ $bag->first('body') }}</p>
-                        @endif
-                        <button type="submit" class="btn btn-primary">Kirim balasan</button>
-                    </form>
-                </section>
+                </a>
             @endforeach
-        </div>
+        </section>
     @endif
 @endsection

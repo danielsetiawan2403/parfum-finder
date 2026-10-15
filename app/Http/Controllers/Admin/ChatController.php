@@ -23,35 +23,52 @@ class ChatController extends Controller
             ->count();
     }
 
-    // Satu kartu per user: percakapan yang perlu dibalas tampil paling atas.
+    // Daftar user yang pernah chat (tanpa isi pesan). Yang perlu dibalas tampil paling atas.
     public function index()
     {
         $users = User::query()
             ->whereHas('chatMessages')
             ->with(['chatMessages' => fn ($q) => $q->orderBy('id')])
             ->get()
-            ->sort(function ($a, $b) {
-                $lastA = $a->chatMessages->last();
-                $lastB = $b->chatMessages->last();
+            ->each(function ($user) {
+                $messages = $user->chatMessages;
+                $lastAdminId = $messages->where('sender', 'admin')->max('id') ?? 0;
 
-                $pendingA = $lastA->sender === 'user';
-                $pendingB = $lastB->sender === 'user';
+                // Pesan user yang belum dibalas = pesan user setelah balasan admin terakhir.
+                $user->unread_count = $messages
+                    ->where('sender', 'user')
+                    ->where('id', '>', $lastAdminId)
+                    ->count();
+                $user->last_message_at = $messages->last()->created_at;
+            })
+            ->sort(function ($a, $b) {
+                $pendingA = $a->unread_count > 0;
+                $pendingB = $b->unread_count > 0;
 
                 if ($pendingA !== $pendingB) {
                     return $pendingA ? -1 : 1;
                 }
 
-                return $lastB->id <=> $lastA->id;
+                return $b->last_message_at <=> $a->last_message_at;
             })
             ->values();
 
         return view('admin.chats.index', compact('users'));
     }
 
+    // Room chat khusus satu user: di sinilah isi pesan ditampilkan.
+    public function show(User $user)
+    {
+        $messages = $user->chatMessages()->orderBy('id')->get();
+
+        abort_if($messages->isEmpty(), 404);
+
+        return view('admin.chats.show', compact('user', 'messages'));
+    }
+
     public function reply(Request $request, User $user): RedirectResponse
     {
-        // Error disimpan per user, supaya hanya kartu yang bersangkutan menampilkannya.
-        $data = $request->validateWithBag("reply-{$user->id}", [
+        $data = $request->validate([
             'body' => ['required', 'string', 'max:1000'],
         ], [
             'body.required' => 'Balasan tidak boleh kosong.',
@@ -63,7 +80,7 @@ class ChatController extends Controller
             'body'   => trim($data['body']),
         ]);
 
-        return redirect(route('admin.chats.index') . '#chat-' . $user->id)
+        return redirect()->route('admin.chats.show', $user)
             ->with('success', "Balasan terkirim ke {$user->name}.");
     }
 }

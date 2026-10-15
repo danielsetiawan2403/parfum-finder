@@ -52,7 +52,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('user', [Admin\UserController::class, 'index'])->name('users.index');
     Route::delete('user/{user}', [Admin\UserController::class, 'destroy'])->name('users.destroy');
 
-    // Chat konsultasi: lihat percakapan dan balas
+    // Chat konsultasi: daftar user, room chat per user, dan balas
     Route::get('chat', [Admin\ChatController::class, 'index'])->name('chats.index');
+    Route::get('chat/{user}', [Admin\ChatController::class, 'show'])->name('chats.show');
     Route::post('chat/{user}', [Admin\ChatController::class, 'reply'])->name('chats.reply');
 });
