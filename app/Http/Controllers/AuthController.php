@@ -26,6 +26,11 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
+            // Admin langsung masuk ke panel admin.
+            if (Auth::user()->role === 'admin') {
+                return redirect()->route('admin.dashboard');
+            }
+
             return redirect()->intended(route('perfumes.index'));
         }
 

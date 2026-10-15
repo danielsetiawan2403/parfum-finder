@@ -1,6 +1,7 @@
 @php
     $authUser     = auth()->user();
     $isPremium    = $authUser?->isPremium() ?? false;
+    $isAdmin      = $authUser?->role === 'admin';
     $premiumUntil = $authUser?->activeSubscription()?->ends_at;
     // Di halaman Premium (pilih paket, pembayaran, status) navbar hanya menampilkan Logout.
     $premiumFlow  = request()->routeIs('premium', 'premium.*');
@@ -32,6 +33,10 @@
                 @endif
 
                 @auth
+                    @if ($isAdmin)
+                        <a href="{{ route('admin.dashboard') }}" class="btn btn-light btn-sm rounded-pill pf-xs fw-semibold">Panel Admin</a>
+                    @endif
+
                     @if ($premiumFlow)
                         {{-- hanya Logout --}}
                     @elseif ($isPremium)

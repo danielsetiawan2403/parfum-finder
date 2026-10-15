@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\PerfumeController;
@@ -35,4 +36,23 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
+});
+
+// Panel admin (wajib login dan role = admin)
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
+
+    // Data Parfum: daftar, tambah, ubah, hapus
+    Route::resource('parfum', Admin\PerfumeController::class)
+        ->parameters(['parfum' => 'perfume'])
+        ->except('show')
+        ->names('perfumes');
+
+    // Data User (customer)
+    Route::get('user', [Admin\UserController::class, 'index'])->name('users.index');
+    Route::delete('user/{user}', [Admin\UserController::class, 'destroy'])->name('users.destroy');
+
+    // Chat konsultasi: lihat percakapan dan balas
+    Route::get('chat', [Admin\ChatController::class, 'index'])->name('chats.index');
+    Route::post('chat/{user}', [Admin\ChatController::class, 'reply'])->name('chats.reply');
 });
