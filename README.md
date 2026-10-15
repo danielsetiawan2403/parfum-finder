@@ -17,46 +17,97 @@ Sistem informasi berbasis web untuk membantu menemukan parfum berdasarkan aroma,
 - Menulis ulasan dengan rating bintang 1 sampai 5, serta membaca ulasan member lain.
 - Chat konsultasi.
 
+**Untuk admin** (panel di `/admin`)
+- Dashboard admin.
+- Kelola data parfum: lihat daftar, tambah, ubah, dan hapus.
+- Kelola chat konsultasi dari member premium.
+- Kelola data pengguna.
+
 ## Teknologi
 
-- PHP 8.3 dan Laravel 13
-- MySQL
+- PHP 8.3 atau lebih baru, dan Laravel 13
+- MySQL / MariaDB
 - Bootstrap 5 (lewat CDN, tidak perlu `npm`)
-- Laragon (lingkungan pengembangan di Windows)
+- Laragon atau XAMPP (lingkungan pengembangan di Windows)
+
+## Kebutuhan
+
+| Kebutuhan | Keterangan |
+|---|---|
+| PHP **8.3+** | Laravel 13 tidak bisa berjalan di PHP 8.2 ke bawah. Cek dengan `php -v`. |
+| Composer | Untuk memasang dependensi (`composer install`). |
+| Git | Untuk clone dan push. |
+| MySQL atau MariaDB | Database `parfum_finder`. |
+
+Laragon Full sudah membawa semuanya. Di XAMPP, Composer dan Git harus dipasang sendiri.
 
 ## Cara menjalankan
 
-Pastikan Laragon sudah terpasang dan Apache serta MySQL menyala (**Start All**).
+### Langkah 1: ambil proyek
 
-1. Clone repo ke folder `www` Laragon, lalu masuk ke foldernya:
-   ```bash
-   cd D:\laragon\www
-   git clone https://github.com/danielsetiawan2403/parfum-finder.git
-   cd parfum-finder
-   ```
-2. Pasang dependensi dan siapkan konfigurasi:
-   ```bash
-   composer install
-   copy .env.example .env
-   php artisan key:generate
-   ```
-3. Buat database kosong bernama `parfum_finder` lewat HeidiSQL (tombol **Database** di Laragon).
-4. Pastikan bagian database di `.env` seperti ini:
-   ```env
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=parfum_finder
-   DB_USERNAME=root
-   DB_PASSWORD=
-   APP_TIMEZONE=Asia/Jakarta
-   ```
-5. Buat tabel dan isi data parfum:
-   ```bash
-   php artisan migrate
-   php artisan db:seed --class=PerfumeSeeder
-   ```
-6. Buka `http://parfum-finder.test` (atau jalankan `php artisan serve` lalu buka `http://127.0.0.1:8000`).
+**Laragon:** clone ke folder `www`.
+```bash
+cd D:\laragon\www
+git clone https://github.com/danielsetiawan2403/parfum-finder.git
+cd parfum-finder
+```
+
+**XAMPP:** clone ke folder mana saja (misalnya `C:\xampp\htdocs`).
+```bash
+cd C:\xampp\htdocs
+git clone https://github.com/danielsetiawan2403/parfum-finder.git
+cd parfum-finder
+```
+
+### Langkah 2: pasang dependensi dan siapkan konfigurasi
+
+```bash
+composer install
+copy .env.example .env
+php artisan key:generate
+```
+
+### Langkah 3: buat database
+
+- **Laragon:** buka HeidiSQL (tombol **Database**), buat database kosong bernama `parfum_finder`.
+- **XAMPP:** nyalakan **Apache** dan **MySQL** di XAMPP Control Panel, buka `http://localhost/phpmyadmin`, lalu buat database kosong bernama `parfum_finder`.
+
+### Langkah 4: atur `.env`
+
+Pastikan bagian database seperti ini (user `root` tanpa password adalah bawaan Laragon dan XAMPP):
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=parfum_finder
+DB_USERNAME=root
+DB_PASSWORD=
+APP_TIMEZONE=Asia/Jakarta
+```
+
+### Langkah 5: buat tabel dan isi data parfum
+
+```bash
+php artisan migrate
+php artisan db:seed --class=PerfumeSeeder
+```
+
+### Langkah 6: jalankan
+
+- **Laragon:** buka `http://parfum-finder.test`.
+- **XAMPP** (atau kalau ingin cara yang sama untuk semua): jalankan server bawaan Laravel lalu buka `http://127.0.0.1:8000`.
+  ```bash
+  php artisan serve
+  ```
+  Biarkan terminal itu tetap terbuka selama memakai website.
+
+### Catatan khusus XAMPP
+
+- **Versi PHP:** pastikan XAMPP yang dipakai membawa PHP 8.3 atau lebih baru (`php -v`). Kalau lebih rendah, pasang XAMPP versi yang lebih baru atau pakai Laragon.
+- **Perintah `php` tidak dikenali:** tambahkan folder PHP XAMPP (biasanya `C:\xampp\php`) ke PATH Windows, lalu buka terminal baru.
+- **Composer:** pasang dari getcomposer.org. Installer-nya akan mencari `php.exe` di folder XAMPP.
+- **Error soal ekstensi** (misalnya `fileinfo`, `mbstring`, atau `pdo_mysql`): buka `C:\xampp\php\php.ini`, hapus tanda `;` di depan baris `extension=...` yang disebut, lalu restart Apache.
+- **MySQL tidak mau menyala karena port 3306 terpakai:** hentikan layanan MySQL lain yang sedang berjalan di komputer.
 
 ### Foto parfum
 
@@ -64,7 +115,7 @@ Foto disimpan di `public/images/parfum/` dengan nama file sesuai kolom `image` d
 
 ### Membuat akun admin
 
-Daftar seperti biasa lewat halaman registrasi, lalu ubah kolom `role` akun tersebut menjadi `admin` di tabel `users` (HeidiSQL).
+Daftar seperti biasa lewat halaman registrasi, lalu ubah kolom `role` akun tersebut menjadi `admin` di tabel `users` (HeidiSQL atau phpMyAdmin). Setelah itu, saat login admin langsung diarahkan ke `/admin`.
 
 ## Struktur penting
 
@@ -72,9 +123,14 @@ Daftar seperti biasa lewat halaman registrasi, lalu ubah kolom `role` akun terse
 |---|---|
 | `routes/web.php` | Daftar route |
 | `app/Http/Controllers/` | `AuthController`, `PerfumeController`, `PremiumController`, `ReviewController`, `ChatController` |
+| `app/Http/Controllers/Admin/` | Controller panel admin |
+| `app/Http/Middleware/EnsureAdmin.php` | Membatasi `/admin` hanya untuk akun dengan `role = admin` |
+| `bootstrap/app.php` | Pendaftaran alias middleware |
 | `app/Models/` | `Perfume`, `Subscription`, `Review`, `ChatMessage`, dan `User` |
 | `resources/views/` | Tampilan Blade (`layouts/`, `premium/`, `chat/`, dan halaman utama) |
-| `public/css/parfum.css` | Gaya tambahan di atas Bootstrap |
+| `resources/views/admin/` | Tampilan panel admin (dashboard, parfum, chat, pengguna) |
+| `public/css/parfum.css` | Gaya tambahan di atas Bootstrap untuk situs utama |
+| `public/css/admin.css` | Gaya panel admin |
 | `database/migrations/` | Struktur tabel |
 | `database/seeders/PerfumeSeeder.php` | Data awal parfum |
 
@@ -89,4 +145,4 @@ Kelompok Parfum
 
 | Nama | NIM | Peran |
 |---|---|---|
-| (Daniel) | (1234) | (Fullstack Client) |
+| Daniel | 1234 | Fullstack Client |
