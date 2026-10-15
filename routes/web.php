@@ -52,6 +52,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('user', [Admin\UserController::class, 'index'])->name('users.index');
     Route::delete('user/{user}', [Admin\UserController::class, 'destroy'])->name('users.destroy');
 
+    // Member Premium: riwayat langganan (mulai, selesai, harga)
+    Route::get('premium', [Admin\PremiumMemberController::class, 'index'])->name('premium.index');
+
     // Chat konsultasi: daftar user, room chat per user, dan balas
     Route::get('chat', [Admin\ChatController::class, 'index'])->name('chats.index');
     Route::get('chat/{user}', [Admin\ChatController::class, 'show'])->name('chats.show');

@@ -13,6 +13,7 @@ class DashboardController extends Controller
         return view('admin.dashboard', [
             'perfumeCount' => Perfume::count(),
             'userCount'    => User::where('role', '!=', 'admin')->count(),
+            'premiumCount' => PremiumMemberController::activeCount(),
             'pendingChats' => ChatController::pendingCount(),
         ]);
     }

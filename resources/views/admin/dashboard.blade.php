@@ -21,6 +21,12 @@
             <span class="stat">{{ $userCount }} user</span>
         </a>
 
+        <a href="{{ route('admin.premium.index') }}" class="menu-card">
+            <h2>Member Premium</h2>
+            <p>Riwayat langganan, masa aktif, dan harga</p>
+            <span class="stat">{{ $premiumCount }} member aktif</span>
+        </a>
+
         <a href="{{ route('admin.chats.index') }}" class="menu-card">
             <h2>Chat Konsultasi</h2>
             <p>Menu untuk chat konsultasi dengan customer</p>
