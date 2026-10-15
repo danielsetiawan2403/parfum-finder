@@ -28,6 +28,7 @@
             <a href="{{ route('admin.dashboard') }}" class="nav-link" @if (request()->routeIs('admin.dashboard')) aria-current="page" @endif>Dashboard</a>
             <a href="{{ route('admin.perfumes.index') }}" class="nav-link" @if (request()->routeIs('admin.perfumes.*')) aria-current="page" @endif>Data Parfum</a>
             <a href="{{ route('admin.users.index') }}" class="nav-link" @if (request()->routeIs('admin.users.*')) aria-current="page" @endif>Data User</a>
+            <a href="{{ route('admin.premium.index') }}" class="nav-link" @if (request()->routeIs('admin.premium.*')) aria-current="page" @endif>Member Premium</a>
             <a href="{{ route('admin.chats.index') }}" class="nav-link" @if (request()->routeIs('admin.chats.*')) aria-current="page" @endif>Chat Konsultasi</a>
 
             <a href="{{ route('perfumes.index') }}" class="nav-link nav-link--muted">Lihat situs</a>
