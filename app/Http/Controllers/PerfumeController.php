@@ -10,6 +10,7 @@ class PerfumeController extends Controller
     // Beranda (landing page): tampilkan 3 parfum pertama.
     public function home()
     {
+        // Ambil 3 parfum dengan id terkecil
         $perfumes = Perfume::orderBy('id')->take(3)->get();
 
         return view('landing', compact('perfumes'));
@@ -25,6 +26,7 @@ class PerfumeController extends Controller
                 ->with('warning', 'Silakan login terlebih dahulu untuk melihat parfum lainnya.');
         }
 
+        // Ambil kata kunci pencarian dan kategori dari query string
         $q        = trim((string) $request->query('q', ''));
         $kategori = $request->query('kategori');
 
@@ -38,10 +40,12 @@ class PerfumeController extends Controller
                       ->orWhere('base_notes', 'like', "%{$q}%");
                 });
             })
+            // Filter kategori hanya jika dipilih
             ->when($kategori, fn ($query) => $query->where('category', $kategori))
             ->orderBy('id')
             ->get();
 
+        // Daftar kategori unik untuk dropdown filter
         $categories = Perfume::query()
             ->whereNotNull('category')
             ->distinct()
@@ -51,20 +55,34 @@ class PerfumeController extends Controller
         return view('dashboard', compact('perfumes', 'categories', 'q', 'kategori'));
     }
 
-    // Halaman detail satu parfum. Ulasan hanya dimuat untuk member premium.
+    // Halaman detail satu parfum.
+    // - Admin & user premium boleh MELIHAT ulasan.
+    // - Hanya user premium (yang bukan admin) boleh MENULIS ulasan.
     public function show(Request $request, Perfume $perfume)
     {
-        $user      = $request->user();
-        $canReview = $user?->isPremium() ?? false;
+        $user = $request->user();
 
+        // Cek peran user (tamu = null, jadi hasilnya false)
+        $isAdmin   = $user?->isAdmin() ?? false;
+        $isPremium = $user?->isPremium() ?? false;
+
+        // Boleh melihat daftar ulasan: admin atau premium
+        $canViewReviews = $isAdmin || $isPremium;
+
+        // Boleh menulis ulasan: premium, tapi bukan admin
+        $canWriteReview = $isPremium && ! $isAdmin;
+
+        // Ulasan hanya dimuat jika user berhak melihatnya
         $reviews = collect();
         $average = null;
 
-        if ($canReview) {
+        if ($canViewReviews) {
             $reviews = $perfume->reviews()->with('user')->latest()->get();
             $average = $reviews->avg('rating');
         }
 
-        return view('perfume-detail', compact('perfume', 'canReview', 'reviews', 'average'));
+        return view('perfume-detail', compact(
+            'perfume', 'canViewReviews', 'canWriteReview', 'reviews', 'average'
+        ));
     }
 }

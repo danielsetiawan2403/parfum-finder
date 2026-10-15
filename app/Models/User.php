@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use App\Models\Concerns\HasPremium;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -16,7 +17,18 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
+    // HasPremium berisi logika premium (method isPremium())
     use HasFactory, Notifiable, HasPremium;
+
+    /**
+     * Cek apakah user ini adalah admin.
+     * Dipakai di PerfumeController@show dan ReviewController@store.
+     * SESUAIKAN: kalau nilai role admin kamu bukan 'admin', ganti di sini.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
 
     /**
      * Get the attributes that should be cast.
