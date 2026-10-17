@@ -397,6 +397,14 @@ table.table { width: 100%; border-collapse: collapse; }
 .confirm p { margin: 0 0 22px; color: var(--ink-2); font-size: 14px; }
 .confirm-actions { display: flex; justify-content: flex-end; gap: 10px; }
 
+/* Kolom alasan penghapusan (hanya tampil untuk form dengan atribut data-reason) */
+.confirm { max-height: 92vh; overflow-y: auto; }
+.confirm-reason { display: grid; gap: 8px; margin: -6px 0 22px; }
+.confirm-reason[hidden] { display: none; }
+.confirm-reason .hint,
+.confirm-reason .field-error { margin: 0; }
+.confirm-reason textarea { min-height: 76px; }
+
 /* =========== Responsif =========== */
 @media (max-width: 960px) {
     .topbar {

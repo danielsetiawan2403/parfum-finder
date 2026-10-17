@@ -21,7 +21,8 @@ Sistem informasi berbasis web untuk membantu menemukan parfum berdasarkan aroma,
 - Dashboard admin.
 - Kelola data parfum: lihat daftar, tambah, ubah, dan hapus.
 - Kelola chat konsultasi dari member premium.
-- Kelola data pengguna.
+- Kelola data pengguna. Saat akun customer dihapus, admin wajib mengisi alasan; alasan itu dikirim ke email user. User yang dihapus tidak bisa login dan melihat keterangannya di halaman login.
+- Member Premium: riwayat langganan, total pendapatan, dan tombol **Cetak Laporan** (laporan pendapatan per periode, siap dicetak atau disimpan sebagai PDF).
 
 ## Teknologi
 
@@ -117,6 +118,20 @@ Foto disimpan di `public/images/parfum/` dengan nama file sesuai kolom `image` d
 
 Daftar seperti biasa lewat halaman registrasi, lalu ubah kolom `role` akun tersebut menjadi `admin` di tabel `users` (HeidiSQL atau phpMyAdmin). Setelah itu, saat login admin langsung diarahkan ke `/admin`.
 
+### Pengaturan email (notifikasi penghapusan akun)
+
+Secara bawaan `MAIL_MAILER=log`: email hanya dicatat di `storage/logs/laravel.log` dan **belum terkirim sungguhan**. Untuk mengirim email nyata, ubah bagian ini di `.env` (contoh memakai Gmail dengan *App Password*, bukan password akun):
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=emailkamu@gmail.com
+MAIL_PASSWORD=app-password-dari-google
+MAIL_FROM_ADDRESS=emailkamu@gmail.com
+MAIL_FROM_NAME="Parfum Finder"
+```
+Jangan commit `.env` karena berisi password. Setelah mengubahnya, jalankan `php artisan config:clear`.
+
 ## Struktur penting
 
 | Lokasi | Isi |
@@ -131,13 +146,16 @@ Daftar seperti biasa lewat halaman registrasi, lalu ubah kolom `role` akun terse
 | `resources/views/admin/` | Tampilan panel admin (dashboard, parfum, chat, pengguna) |
 | `public/css/parfum.css` | Gaya tambahan di atas Bootstrap untuk situs utama |
 | `public/css/admin.css` | Gaya panel admin |
+| `app/Mail/AccountDeletedMail.php` | Email alasan penghapusan akun |
+| `resources/views/emails/` | Tampilan email |
 | `database/migrations/` | Struktur tabel |
 | `database/seeders/PerfumeSeeder.php` | Data awal parfum |
 
 ## Catatan
 
 - Pembayaran Premium bersifat **simulasi**: tombol konfirmasi langsung mengaktifkan keanggotaan dan QR dibuat dari data invoice, belum terhubung ke payment gateway.
-- Bootstrap, font Poppins, dan pembuat QR dimuat dari CDN, jadi tampilan lengkap membutuhkan koneksi internet.
+- Bootstrap (CSS dan JavaScript untuk menu hamburger), font Poppins, dan pembuat QR dimuat dari CDN, jadi tampilan lengkap membutuhkan koneksi internet.
+- Akun yang dihapus admin hanya ditandai terhapus (soft delete), jadi riwayat pembayarannya tetap masuk laporan pendapatan. Username dan email-nya tetap terkunci sehingga tidak bisa dipakai mendaftar lagi.
 
 ## Tim
 

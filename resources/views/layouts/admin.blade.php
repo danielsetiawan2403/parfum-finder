@@ -53,11 +53,31 @@
         </div>
     </main>
 
-    {{-- Dialog konfirmasi hapus (dipakai form dengan atribut data-confirm) --}}
+    {{-- Dialog konfirmasi hapus (dipakai form dengan atribut data-confirm).
+         Kolom alasan hanya tampil untuk form yang juga punya atribut data-reason. --}}
     <dialog class="confirm" id="confirmDialog" aria-labelledby="confirmTitle">
         <form method="dialog">
             <h2 id="confirmTitle" data-confirm-title>Konfirmasi</h2>
             <p data-confirm-message></p>
+
+            <div class="confirm-reason" data-confirm-reason hidden>
+                <label for="confirmReasonPreset" class="field-label">Alasan penghapusan</label>
+                <select id="confirmReasonPreset" data-reason-preset>
+                    <option value="">Pilih alasan cepat...</option>
+                    <option value="Berkata kasar atau toxic di ulasan">Berkata kasar atau toxic di ulasan</option>
+                    <option value="Mengirim spam atau iklan di ulasan atau chat">Mengirim spam atau iklan</option>
+                    <option value="Melanggar ketentuan penggunaan Parfum Finder">Melanggar ketentuan penggunaan</option>
+                    <option value="Akun palsu atau ganda">Akun palsu atau ganda</option>
+                    <option value="__other">Lainnya (tulis sendiri)</option>
+                </select>
+
+                <label for="confirmReasonText" class="sr-only">Tulis alasan</label>
+                <textarea id="confirmReasonText" data-reason-text rows="3" maxlength="500" placeholder="Tulis alasan penghapusan..."></textarea>
+
+                <p class="hint">Alasan ini dikirim ke email user dan tampil saat user mencoba login.</p>
+                <p class="field-error" data-reason-error role="alert" hidden>Alasan wajib diisi (minimal 5 karakter).</p>
+            </div>
+
             <div class="confirm-actions">
                 <button type="submit" value="cancel" class="btn btn-ghost">Batal</button>
                 <button type="submit" value="ok" class="btn btn-danger-solid" data-confirm-ok>Hapus</button>
@@ -81,30 +101,86 @@
             });
             document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { setNav(false); } });
 
-            // Konfirmasi sebelum menghapus
+            // Konfirmasi sebelum menghapus. Form dengan atribut data-reason juga meminta alasan,
+            // yang dikirim lewat input hidden bernama "reason" di form tersebut.
             var dialog = document.getElementById('confirmDialog');
+            var reasonBox = dialog ? dialog.querySelector('[data-confirm-reason]') : null;
+            var reasonText = dialog ? dialog.querySelector('[data-reason-text]') : null;
+            var reasonPreset = dialog ? dialog.querySelector('[data-reason-preset]') : null;
+            var reasonError = dialog ? dialog.querySelector('[data-reason-error]') : null;
+            var okButton = dialog ? dialog.querySelector('[data-confirm-ok]') : null;
             var pending = null;
+
+            function setReason(form, value) {
+                var hidden = form.querySelector('input[name="reason"]');
+                if (hidden) { hidden.value = value; }
+            }
 
             document.querySelectorAll('form[data-confirm]').forEach(function (form) {
                 form.addEventListener('submit', function (e) {
                     e.preventDefault();
+                    var needsReason = form.hasAttribute('data-reason');
 
+                    // Browser lama tanpa <dialog>: pakai kotak bawaan browser.
                     if (!dialog || typeof dialog.showModal !== 'function') {
-                        if (window.confirm(form.dataset.confirm)) { form.submit(); }
+                        if (needsReason) {
+                            var typed = window.prompt(form.dataset.confirm + '\n\nAlasan penghapusan (dikirim ke email user):');
+                            if (typed !== null && typed.trim().length >= 5) {
+                                setReason(form, typed.trim());
+                                form.submit();
+                            } else if (typed !== null) {
+                                window.alert('Alasan wajib diisi (minimal 5 karakter).');
+                            }
+                        } else if (window.confirm(form.dataset.confirm)) {
+                            form.submit();
+                        }
                         return;
                     }
 
                     pending = form;
                     dialog.querySelector('[data-confirm-title]').textContent = form.dataset.confirmTitle || 'Konfirmasi';
                     dialog.querySelector('[data-confirm-message]').textContent = form.dataset.confirm;
-                    dialog.querySelector('[data-confirm-ok]').textContent = form.dataset.confirmOk || 'Hapus';
+                    okButton.textContent = form.dataset.confirmOk || 'Hapus';
+
+                    if (reasonBox) {
+                        reasonBox.hidden = !needsReason;
+                        reasonPreset.value = '';
+                        reasonText.value = '';
+                        reasonError.hidden = true;
+                    }
+
                     dialog.showModal();
+                    if (needsReason && reasonText) { reasonText.focus(); }
                 });
             });
 
+            // Pilihan alasan cepat mengisi kolom teks (tetap bisa diedit).
+            if (reasonPreset) {
+                reasonPreset.addEventListener('change', function () {
+                    if (reasonPreset.value === '__other') { reasonText.value = ''; }
+                    else if (reasonPreset.value !== '') { reasonText.value = reasonPreset.value; }
+                    reasonError.hidden = true;
+                    reasonText.focus();
+                });
+            }
+
+            // Tombol Hapus tidak menutup dialog sebelum alasan diisi.
+            if (okButton) {
+                okButton.addEventListener('click', function (e) {
+                    if (pending && pending.hasAttribute('data-reason') && reasonText.value.trim().length < 5) {
+                        e.preventDefault();
+                        reasonError.hidden = false;
+                        reasonText.focus();
+                    }
+                });
+            }
+
             if (dialog) {
                 dialog.addEventListener('close', function () {
-                    if (dialog.returnValue === 'ok' && pending) { pending.submit(); }
+                    if (dialog.returnValue === 'ok' && pending) {
+                        if (pending.hasAttribute('data-reason')) { setReason(pending, reasonText.value.trim()); }
+                        pending.submit();
+                    }
                     pending = null;
                     dialog.returnValue = '';
                 });

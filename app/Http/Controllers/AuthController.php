@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -32,6 +33,16 @@ class AuthController extends Controller
             }
 
             return redirect()->intended(route('perfumes.index'));
+        }
+
+        // Akun yang sudah dihapus admin tidak bisa login. Keterangannya hanya ditampilkan kalau
+        // password-nya benar, supaya orang lain tidak bisa menebak username yang pernah dihapus.
+        $deleted = User::onlyTrashed()->where('username', $credentials['username'])->first();
+
+        if ($deleted && Hash::check($credentials['password'], $deleted->password)) {
+            return back()
+                ->with('account_deleted', $deleted->deletion_reason ?: 'Tidak ada alasan yang dicatat.')
+                ->onlyInput('username');
         }
 
         return back()

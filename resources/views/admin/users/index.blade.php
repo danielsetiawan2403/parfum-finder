@@ -59,11 +59,14 @@
                                     @endif
                                 </td>
                                 <td class="col-act">
+                                    {{-- data-reason: dialog konfirmasi meminta alasan, lalu diisikan ke input "reason" --}}
                                     <form action="{{ route('admin.users.destroy', $user) }}" method="POST"
-                                          data-confirm="Akun &quot;{{ $user->name }}&quot; akan dihapus permanen beserta ulasan, langganan, dan riwayat chat-nya."
-                                          data-confirm-title="Hapus user?">
+                                          data-confirm="Akun &quot;{{ $user->name }}&quot; akan dihapus dan tidak bisa login lagi. Ulasan dan riwayat chat-nya ikut dihapus, sedangkan riwayat pembayarannya tetap disimpan untuk laporan pendapatan."
+                                          data-confirm-title="Hapus user?"
+                                          data-reason>
                                         @csrf
                                         @method('DELETE')
+                                        <input type="hidden" name="reason" value="">
                                         <button type="submit" class="btn btn-danger">Hapus</button>
                                     </form>
                                 </td>

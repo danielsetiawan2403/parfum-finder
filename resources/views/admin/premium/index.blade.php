@@ -38,6 +38,12 @@
                 <a href="{{ route('admin.premium.index') }}" class="btn btn-ghost">Reset</a>
             @endif
         </form>
+
+        {{-- Laporan pendapatan: halaman siap cetak, dibuka di tab baru --}}
+        <a href="{{ route('admin.premium.report') }}" target="_blank" rel="noopener" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z"/></svg>
+            Cetak Laporan
+        </a>
     </div>
 
     <section class="panel">
@@ -67,7 +73,12 @@
                             <tr>
                                 <td class="col-no">{{ $subscriptions->firstItem() + $loop->index }}</td>
                                 <td data-label="User">
-                                    <span class="strong">{{ $s->user->name ?? '(user dihapus)' }}</span><br>
+                                    <span class="strong">{{ $s->user->name ?? '(user dihapus)' }}</span>
+                                    {{-- Akun sudah dihapus admin, tapi pembayarannya tetap tercatat --}}
+                                    @if ($s->user?->trashed())
+                                        <span class="badge badge--free">akun dihapus</span>
+                                    @endif
+                                    <br>
                                     <small style="color: var(--muted); overflow-wrap: anywhere;">{{ $s->user->email ?? '' }}</small>
                                 </td>
                                 <td data-label="Invoice">{{ $s->invoice }}</td>

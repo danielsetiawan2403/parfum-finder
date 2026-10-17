@@ -25,7 +25,14 @@
                 <div role="alert" class="alert alert-warning py-2 px-3 small fw-semibold m-0">{{ session('warning') }}</div>
             @endif
 
-            @if ($errors->any())
+            {{-- Akun sudah dihapus admin: jelaskan kenapa tidak bisa login --}}
+            @if (session('account_deleted'))
+                <div role="alert" class="alert alert-danger py-2 px-3 small m-0">
+                    <strong class="d-block">Akun ini sudah dihapus oleh admin, jadi tidak bisa dipakai untuk login.</strong>
+                    <span class="d-block mt-1 text-break">Alasan: {{ session('account_deleted') }}</span>
+                    <span class="d-block mt-1">Merasa ini keliru? Hubungi admin Parfum Finder.</span>
+                </div>
+            @elseif ($errors->any())
                 <div role="alert" class="alert alert-danger py-2 px-3 small m-0">{{ $errors->first() }}</div>
             @endif
 

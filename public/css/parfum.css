@@ -252,3 +252,98 @@ body {
     max-height: 22rem;
     overflow-y: auto;
 }
+
+
+/* ---------- Navbar responsif ---------- */
+.pf-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+.pf-nav form {
+    margin: 0;
+}
+
+/* Kolom cari: di HP input memanjang penuh, kategori dan tombol Go di baris berikutnya */
+.pf-nav-search {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.pf-nav-search .form-control {
+    flex: 1 1 100%;
+    min-width: 0;
+}
+.pf-nav-search .form-select {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+/* Di bawah 992px: isi menu hamburger disusun ke bawah, tombol memenuhi lebar layar */
+@media (max-width: 991.98px) {
+    .pf-nav--stack {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.75rem 0 0.5rem;
+    }
+    .pf-nav--stack .pf-nav-search {
+        width: 100%;
+    }
+    .pf-nav--stack > .btn,
+    .pf-nav--stack .pf-nav-logout,
+    .pf-nav--stack .pf-nav-logout .btn {
+        width: 100%;
+    }
+    .pf-nav--stack .btn {
+        padding: 0.55rem 0.9rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* 992px ke atas: semua sejajar di sisi kanan, kolom cari kompak */
+@media (min-width: 992px) {
+    .navbar-expand-lg .navbar-collapse .pf-nav {
+        flex-wrap: nowrap;
+        margin-left: auto;
+    }
+    .pf-nav-search {
+        flex-wrap: nowrap;
+        gap: 0.25rem;
+    }
+    .pf-nav-search .form-control {
+        flex: 0 0 9rem;
+    }
+    .pf-nav-search .form-select {
+        flex: 0 0 auto;
+        width: auto;
+    }
+    .pf-nav-search .form-control,
+    .pf-nav-search .form-select,
+    .pf-nav-search .btn {
+        font-size: 0.75rem;
+    }
+}
+
+/* ---------- Layar sentuh dan HP ---------- */
+
+/* Layar sentuh tidak punya "hover" sungguhan: tanpa aturan ini kartu tetap terangkat setelah disentuh. */
+@media (hover: none) {
+    .pf-card:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    .pf-card:hover .pf-img img,
+    .pf-card:hover .pf-img-h img {
+        transform: none;
+    }
+}
+
+/* Teks input di bawah 16px membuat Safari iPhone otomatis memperbesar halaman saat kolom disentuh. */
+@media (max-width: 767.98px) {
+    input.form-control,
+    textarea.form-control,
+    select.form-select {
+        font-size: 1rem;
+    }
+}

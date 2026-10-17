@@ -6,7 +6,7 @@
     {{-- Header: sapaan untuk user yang login, judul biasa untuk tamu --}}
     <section class="bg-black text-center px-3 py-5">
         @auth
-            <h1 class="fw-bold fs-2">Hi, {{ auth()->user()->username ?? auth()->user()->name }} 👋</h1>
+            <h1 class="fw-bold fs-2 text-break">Hi, {{ auth()->user()->username ?? auth()->user()->name }} 👋</h1>
         @else
             <h1 class="fw-bold fs-2">Explore Parfum</h1>
         @endauth

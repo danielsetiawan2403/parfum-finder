@@ -43,6 +43,7 @@ class Subscription extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        // withTrashed: pembayaran dari akun yang sudah dihapus tetap menampilkan nama pemiliknya.
+        return $this->belongsTo(User::class)->withTrashed();
     }
 }

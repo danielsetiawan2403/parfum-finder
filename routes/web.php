@@ -54,6 +54,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Member Premium: riwayat langganan (mulai, selesai, harga)
     Route::get('premium', [Admin\PremiumMemberController::class, 'index'])->name('premium.index');
+    // Laporan pendapatan langganan (halaman siap cetak)
+    Route::get('premium/laporan', [Admin\PremiumMemberController::class, 'report'])->name('premium.report');
 
     // Data Ulasan: pantau semua ulasan dan hapus yang melanggar
     Route::get('ulasan', [Admin\ReviewController::class, 'index'])->name('reviews.index');
