@@ -25,6 +25,15 @@ trait HasPremium
         return $this->hasMany(ChatMessage::class);
     }
 
+    // Apakah ada balasan admin yang belum dibaca user (untuk titik merah lonceng).
+    public function hasUnreadChat(): bool
+    {
+        return $this->chatMessages()
+            ->where('sender', 'admin')
+            ->whereNull('read_at')
+            ->exists();
+    }
+
     public function activeSubscription(): ?Subscription
     {
         if (! $this->activeSubscriptionLoaded) {

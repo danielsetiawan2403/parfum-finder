@@ -21,6 +21,13 @@ class ChatController extends Controller
             ->orderBy('id')
             ->get();
 
+        // User membuka chat = semua balasan admin dianggap sudah dibaca (titik merah hilang)
+        $request->user()
+            ->chatMessages()
+            ->where('sender', 'admin')
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+
         return view('chat.index', compact('messages'));
     }
 

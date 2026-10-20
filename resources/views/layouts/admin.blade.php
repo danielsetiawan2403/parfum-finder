@@ -21,6 +21,10 @@
     </header>
     <div class="overlay" data-nav-close></div>
 
+    {{-- Jumlah percakapan yang menunggu balasan admin (pesan terakhir dari customer).
+         Jika lebih dari 0, menu Chat Konsultasi diberi titik merah. --}}
+    @php $pendingChats = \App\Http\Controllers\Admin\ChatController::pendingCount(); @endphp
+
     <aside class="sidebar" id="sidebar">
         <h1 class="brand">Admin Panel</h1>
 
@@ -30,7 +34,13 @@
             <a href="{{ route('admin.users.index') }}" class="nav-link" @if (request()->routeIs('admin.users.*')) aria-current="page" @endif>Data User</a>
             <a href="{{ route('admin.premium.index') }}" class="nav-link" @if (request()->routeIs('admin.premium.*')) aria-current="page" @endif>Member Premium</a>
             <a href="{{ route('admin.reviews.index') }}" class="nav-link" @if (request()->routeIs('admin.reviews.*')) aria-current="page" @endif>Data Ulasan</a>
-            <a href="{{ route('admin.chats.index') }}" class="nav-link" @if (request()->routeIs('admin.chats.*')) aria-current="page" @endif>Chat Konsultasi</a>
+            <a href="{{ route('admin.chats.index') }}" class="nav-link" @if (request()->routeIs('admin.chats.*')) aria-current="page" @endif>
+                Chat Konsultasi
+                @if ($pendingChats > 0)
+                    <span class="nav-dot" title="{{ $pendingChats }} chat belum dibalas" aria-hidden="true"></span>
+                    <span class="sr-only">{{ $pendingChats }} chat belum dibalas</span>
+                @endif
+            </a>
 
             <a href="{{ route('perfumes.index') }}" class="nav-link nav-link--muted">Lihat situs</a>
 

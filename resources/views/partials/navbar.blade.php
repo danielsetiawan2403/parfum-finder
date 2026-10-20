@@ -12,6 +12,15 @@
     // Menu hamburger hanya dipakai kalau item-nya banyak.
     // Tamu (hanya tombol Login) dan halaman Premium (hanya Logout) cukup satu tombol di kanan.
     $collapsible  = $authUser && ! $premiumFlow;
+
+    // Lonceng notifikasi chat: hanya untuk user premium biasa (bukan admin, bukan alur Premium)
+    $showBell      = $authUser && ! $premiumFlow && ! $isAdmin && $isPremium;
+    $hasUnreadChat = $showBell && $authUser->hasUnreadChat();
+
+    // Daftar notifikasi lonceng: 5 balasan admin terbaru (yang belum dibaca ditandai)
+    $chatNotifs = $showBell
+        ? $authUser->chatMessages()->where('sender', 'admin')->latest('id')->limit(5)->get()
+        : collect();
 @endphp
 
 <header class="bg-pf-red">
@@ -65,6 +74,44 @@
                         @elseif ($isPremium)
                             {{-- User premium: menu Chat --}}
                             <a href="{{ route('chat.index') }}" class="btn btn-pf-gray btn-sm rounded-pill pf-xs fw-semibold">💬 Chat</a>
+
+                            {{-- Lonceng notifikasi: klik membuka daftar notifikasi (dropdown).
+                                 Titik merah muncul jika ada balasan admin yang belum dibaca.
+                                 Klik salah satu notifikasi mengarahkan ke room Chat Konsultasi. --}}
+                            <div class="dropdown pf-notif">
+                                <button type="button"
+                                        class="btn btn-pf-gray btn-sm rounded-pill pf-xs fw-semibold pf-bell"
+                                        data-bs-toggle="dropdown" aria-expanded="false"
+                                        aria-label="{{ $hasUnreadChat ? 'Notifikasi: ada balasan baru dari admin' : 'Notifikasi' }}">
+                                    🔔
+                                    @if ($hasUnreadChat)
+                                        <span class="pf-bell-dot" aria-hidden="true"></span>
+                                    @endif
+                                </button>
+
+                                <div class="dropdown-menu dropdown-menu-dark dropdown-menu-end pf-notif-menu shadow">
+                                    <h6 class="dropdown-header fw-bold">Notifikasi</h6>
+
+                                    @forelse ($chatNotifs as $notif)
+                                        @php $unread = is_null($notif->read_at); @endphp
+                                        <a href="{{ route('chat.index') }}" class="dropdown-item pf-notif-item {{ $unread ? '' : 'opacity-50' }}">
+                                            <div class="d-flex align-items-start gap-2">
+                                                <span class="fs-5 lh-1">💬</span>
+                                                <div class="flex-grow-1 min-w-0">
+                                                    <div class="pf-xs {{ $unread ? 'fw-bold' : '' }}">Admin membalas pesanmu</div>
+                                                    <div class="pf-xs text-white-50 text-truncate">{{ \Illuminate\Support\Str::limit($notif->body, 60) }}</div>
+                                                    <div class="text-white-50" style="font-size: .65rem;">{{ $notif->created_at->locale('id')->diffForHumans() }}</div>
+                                                </div>
+                                                @if ($unread)
+                                                    <span class="pf-notif-new" aria-label="Belum dibaca"></span>
+                                                @endif
+                                            </div>
+                                        </a>
+                                    @empty
+                                        <div class="dropdown-item-text pf-xs text-white-50 py-3 text-center">Belum ada notifikasi.</div>
+                                    @endforelse
+                                </div>
+                            </div>
 
                             {{-- Badge masa aktif premium --}}
                             @if ($premiumUntil)

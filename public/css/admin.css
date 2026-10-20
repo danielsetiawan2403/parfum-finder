@@ -85,6 +85,16 @@ body {
 .nav-link[aria-current="page"] { background: rgba(255, 255, 255, .1); color: #fff; font-weight: 600; }
 .nav-link--muted { color: #94a3b8; font-size: 14px; margin-top: auto; }
 
+/* Titik merah penanda chat baru dari customer, di sebelah teks menu */
+.nav-dot {
+    display: inline-block;
+    width: 9px; height: 9px;
+    margin-left: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    vertical-align: middle;
+}
+
 .nav-logout { color: var(--logout); font-weight: 700; }
 .nav-logout:hover { background: rgba(239, 68, 68, .12); }
 

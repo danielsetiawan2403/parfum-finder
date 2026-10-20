@@ -175,6 +175,55 @@ body {
     color: #fff;
 }
 
+/* Lonceng notifikasi chat: titik merah di pojok kanan atas */
+.pf-bell {
+    position: relative;
+}
+.pf-bell-dot {
+    position: absolute;
+    top: 0.1rem;
+    right: 0.2rem;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background-color: #ef4444;
+    border: 2px solid #444;
+}
+
+/* Dropdown daftar notifikasi lonceng */
+.pf-notif-menu {
+    width: 20rem;
+    max-width: 90vw;
+    padding: 0.25rem 0;
+}
+.pf-notif-item {
+    white-space: normal;
+    padding: 0.6rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.pf-notif-new {
+    flex: 0 0 auto;
+    width: 0.55rem;
+    height: 0.55rem;
+    margin-top: 0.3rem;
+    border-radius: 50%;
+    background-color: #ef4444;
+}
+.min-w-0 {
+    min-width: 0;
+}
+
+/* Di menu hamburger (HP): lonceng dan daftarnya memenuhi lebar layar */
+@media (max-width: 991.98px) {
+    .pf-nav--stack .pf-notif,
+    .pf-nav--stack .pf-notif > .btn {
+        width: 100%;
+    }
+    .pf-notif-menu {
+        width: 100%;
+    }
+}
+
 /* Kartu pilihan paket */
 .pf-plan {
     cursor: pointer;
