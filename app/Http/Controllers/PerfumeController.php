@@ -11,7 +11,7 @@ class PerfumeController extends Controller
     public function home()
     {
         // Ambil 3 parfum dengan id terkecil
-        $perfumes = Perfume::orderBy('id')->take(3)->get();
+        $perfumes = Perfume::orderByDesc('id')->take(3)->get();
 
         return view('landing', compact('perfumes'));
     }
@@ -42,7 +42,7 @@ class PerfumeController extends Controller
             })
             // Filter kategori hanya jika dipilih
             ->when($kategori, fn ($query) => $query->where('category', $kategori))
-            ->orderBy('id')
+            ->orderByDesc('id')
             ->get();
 
         // Daftar kategori unik untuk dropdown filter

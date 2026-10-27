@@ -28,7 +28,7 @@ class PerfumeController extends Controller
         $perfumes = Perfume::query()
             ->when($q !== '', fn ($query) => $query->where('name', 'like', "%{$q}%"))
             ->when($kategori, fn ($query) => $query->where('category', $kategori))
-            ->orderBy('id')
+            ->orderByDesc('id')
             ->paginate(10)
             ->withQueryString();
 
