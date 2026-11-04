@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
 use App\Models\User;
-use Illuminate\Http\RedirectResponse;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ChatController extends Controller
@@ -24,34 +25,14 @@ class ChatController extends Controller
     }
 
     // Daftar user yang pernah chat (tanpa isi pesan). Yang perlu dibalas tampil paling atas.
-    public function index()
+    // Dipanggil juga oleh JavaScript tiap beberapa detik (AJAX), jadi hanya bagian daftarnya yang dikirim.
+    public function index(Request $request)
     {
-        $users = User::query()
-            ->whereHas('chatMessages')
-            ->with(['chatMessages' => fn ($q) => $q->orderBy('id')])
-            ->get()
-            ->each(function ($user) {
-                $messages = $user->chatMessages;
-                $lastAdminId = $messages->where('sender', 'admin')->max('id') ?? 0;
+        $users = $this->conversations();
 
-                // Pesan user yang belum dibalas = pesan user setelah balasan admin terakhir.
-                $user->unread_count = $messages
-                    ->where('sender', 'user')
-                    ->where('id', '>', $lastAdminId)
-                    ->count();
-                $user->last_message_at = $messages->last()->created_at;
-            })
-            ->sort(function ($a, $b) {
-                $pendingA = $a->unread_count > 0;
-                $pendingB = $b->unread_count > 0;
-
-                if ($pendingA !== $pendingB) {
-                    return $pendingA ? -1 : 1;
-                }
-
-                return $b->last_message_at <=> $a->last_message_at;
-            })
-            ->values();
+        if ($request->ajax()) {
+            return view('admin.chats._list', compact('users'));
+        }
 
         return view('admin.chats.index', compact('users'));
     }
@@ -66,7 +47,24 @@ class ChatController extends Controller
         return view('admin.chats.show', compact('user', 'messages'));
     }
 
-    public function reply(Request $request, User $user): RedirectResponse
+    // Dipanggil JavaScript tiap beberapa detik: kirim pesan yang id-nya lebih besar dari ?after=.
+    public function poll(Request $request, User $user): JsonResponse
+    {
+        $after = max(0, (int) $request->query('after', 0));
+
+        $messages = $user->chatMessages()
+            ->where('id', '>', $after)
+            ->orderBy('id')
+            ->limit(100)
+            ->get();
+
+        return response()->json([
+            'messages' => $messages->map(fn (ChatMessage $m) => $this->format($m))->values(),
+        ]);
+    }
+
+    // Balas user. Dari JavaScript (AJAX) jawabannya JSON, dari form biasa tetap redirect.
+    public function reply(Request $request, User $user)
     {
         $data = $request->validate([
             'body' => ['required', 'string', 'max:1000'],
@@ -75,12 +73,66 @@ class ChatController extends Controller
             'body.max'      => 'Balasan maksimal 1000 karakter.',
         ]);
 
-        $user->chatMessages()->create([
+        $message = $user->chatMessages()->create([
             'sender' => 'admin',
             'body'   => trim($data['body']),
         ]);
 
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $this->format($message)], 201);
+        }
+
         return redirect()->route('admin.chats.show', $user)
             ->with('success', "Balasan terkirim ke {$user->name}.");
+    }
+
+    // Satu baris per user yang pernah chat, sudah terurut: yang perlu dibalas paling atas.
+    // Memakai dua query ringkas (bukan memuat semua pesan) karena daftar ini diambil berulang oleh JavaScript.
+    private function conversations()
+    {
+        // Pesan terakhir tiap user.
+        $last = ChatMessage::query()
+            ->selectRaw('user_id, MAX(created_at) AS last_at')
+            ->groupBy('user_id')
+            ->get()
+            ->keyBy('user_id');
+
+        // Jumlah pesan user yang belum dibalas = pesan user setelah balasan admin terakhir.
+        $unread = ChatMessage::query()
+            ->where('sender', 'user')
+            ->whereRaw("id > COALESCE((SELECT MAX(m.id) FROM chat_messages m WHERE m.user_id = chat_messages.user_id AND m.sender = 'admin'), 0)")
+            ->selectRaw('user_id, COUNT(*) AS total')
+            ->groupBy('user_id')
+            ->pluck('total', 'user_id');
+
+        return User::query()
+            ->whereIn('id', $last->keys())
+            ->get()
+            ->each(function (User $user) use ($last, $unread) {
+                $user->unread_count    = (int) ($unread[$user->id] ?? 0);
+                $user->last_message_at = Carbon::parse($last[$user->id]->last_at);
+            })
+            ->sort(function ($a, $b) {
+                $pendingA = $a->unread_count > 0;
+                $pendingB = $b->unread_count > 0;
+
+                if ($pendingA !== $pendingB) {
+                    return $pendingA ? -1 : 1;
+                }
+
+                return $b->last_message_at <=> $a->last_message_at;
+            })
+            ->values();
+    }
+
+    // Bentuk pesan yang dikirim ke JavaScript.
+    private function format(ChatMessage $message): array
+    {
+        return [
+            'id'     => $message->id,
+            'sender' => $message->sender,
+            'body'   => $message->body,
+            'time'   => $message->created_at->locale('id')->translatedFormat('j M, H:i'),
+        ];
     }
 }

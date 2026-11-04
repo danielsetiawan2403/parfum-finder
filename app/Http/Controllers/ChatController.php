@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ChatMessage;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -31,12 +33,46 @@ class ChatController extends Controller
         return view('chat.index', compact('messages'));
     }
 
-    // Kirim pesan.
+    // Dipanggil JavaScript tiap beberapa detik: kirim pesan yang id-nya lebih besar dari ?after=.
+    // Hanya jalan saat tab chat terlihat, jadi balasan yang ikut terkirim ke sini otomatis dianggap sudah dibaca.
+    public function poll(Request $request): JsonResponse
+    {
+        if ($this->guardAccess($request)) {
+            return response()->json(['messages' => []], 403);
+        }
+
+        $after = max(0, (int) $request->query('after', 0));
+
+        $messages = $request->user()
+            ->chatMessages()
+            ->where('id', '>', $after)
+            ->orderBy('id')
+            ->limit(100)
+            ->get();
+
+        $adminIds = $messages->where('sender', 'admin')->pluck('id');
+
+        if ($adminIds->isNotEmpty()) {
+            $request->user()
+                ->chatMessages()
+                ->whereIn('id', $adminIds)
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
+        }
+
+        return response()->json([
+            'messages' => $messages->map(fn (ChatMessage $m) => $this->format($m))->values(),
+        ]);
+    }
+
+    // Kirim pesan. Dari JavaScript (AJAX) jawabannya JSON, dari form biasa tetap redirect.
     public function store(Request $request)
     {
         // Tolak admin dan user non-premium
         if ($redirect = $this->guardAccess($request)) {
-            return $redirect;
+            return $request->expectsJson()
+                ? response()->json(['message' => 'Akses ditolak.'], 403)
+                : $redirect;
         }
 
         // Validasi isi pesan
@@ -48,12 +84,27 @@ class ChatController extends Controller
         ]);
 
         // Simpan pesan sebagai pesan dari user
-        $request->user()->chatMessages()->create([
+        $message = $request->user()->chatMessages()->create([
             'sender' => 'user',
             'body'   => trim($data['body']),
         ]);
 
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $this->format($message)], 201);
+        }
+
         return redirect()->route('chat.index');
+    }
+
+    // Bentuk pesan yang dikirim ke JavaScript.
+    private function format(ChatMessage $message): array
+    {
+        return [
+            'id'     => $message->id,
+            'sender' => $message->sender,
+            'body'   => $message->body,
+            'time'   => $message->created_at->locale('id')->translatedFormat('j M, H:i'),
+        ];
     }
 
     // Penjaga akses chat:

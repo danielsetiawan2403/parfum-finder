@@ -35,6 +35,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/parfum/{perfume}/ulasan', [ReviewController::class, 'store'])->name('reviews.store');
 
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/pesan', [ChatController::class, 'poll'])->name('chat.poll');
     Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
 });
 
@@ -64,5 +65,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Chat konsultasi: daftar user, room chat per user, dan balas
     Route::get('chat', [Admin\ChatController::class, 'index'])->name('chats.index');
     Route::get('chat/{user}', [Admin\ChatController::class, 'show'])->name('chats.show');
+    Route::get('chat/{user}/pesan', [Admin\ChatController::class, 'poll'])->name('chats.poll');
     Route::post('chat/{user}', [Admin\ChatController::class, 'reply'])->name('chats.reply');
 });
